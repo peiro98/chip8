@@ -179,4 +179,10 @@ extern void CHIP8_set_keyboard_input_function(CHIP8 *chip8, void (*keyboard_inpu
  */
 _Noreturn extern void CHIP8_loop(CHIP8 *chip8);
 
+/**
+ * Emulate one CPU cycle
+ * @param chip8 is a pointer to the emulator
+ */
+extern void CHIP8_tick(CHIP8 *chip8);
+
 #endif

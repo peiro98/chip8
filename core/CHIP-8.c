@@ -143,38 +143,44 @@ void CHIP8_set_keyboard_input_function(CHIP8 *chip8, void (*keyboard_input)(uint
 
 _Noreturn void CHIP8_loop(CHIP8 *chip8) {
     while (1) {
-        // fetch instruction
-        uint16_t opcode = (chip8->memory[chip8->PC] << 8) | (chip8->memory[chip8->PC + 1]);
-
-        chip8->PC = chip8->PC + 2;
-        for (int i = 0; i < ISA_SIZE; i++) {
-            if ((opcode & chip8->ISA[i].mask) == chip8->ISA[i].opcode) {
-                chip8->ISA[i].execute(chip8, opcode);
-            }
-        }
-
-        if (chip8->draw_flag) {
-            chip8->refresh_screen(chip8->video);
-            chip8->draw_flag = 0;
-        }
-
-        // update timers
-        if (chip8->delay_timer) {
-            chip8->delay_timer--;
-        }
-
-        if (chip8->sound_timer) {
-            chip8->sound_timer--;
-            if (chip8->sound_timer == 1) {
-                chip8->beep();
-            }
-        }
-
-        // keyboard management
-        chip8->keyboard_input(chip8->key);
+        CHIP8_tick(chip8);
 
         usleep(CLK_PERIOD);
     }
+}
+
+void CHIP8_tick(CHIP8 *chip8) {
+    // reset the draw flag
+    chip8->draw_flag = 0;
+
+    // fetch instruction
+    uint16_t opcode = (chip8->memory[chip8->PC] << 8) | (chip8->memory[chip8->PC + 1]);
+
+    chip8->PC = chip8->PC + 2;
+    for (int i = 0; i < ISA_SIZE; i++) {
+        if ((opcode & chip8->ISA[i].mask) == chip8->ISA[i].opcode) {
+            chip8->ISA[i].execute(chip8, opcode);
+        }
+    }
+
+    if (chip8->draw_flag) {
+        chip8->refresh_screen(chip8->video);
+    }
+
+    // update timers
+    if (chip8->delay_timer) {
+        chip8->delay_timer--;
+    }
+
+    if (chip8->sound_timer) {
+        chip8->sound_timer--;
+        if (chip8->sound_timer == 1) {
+            chip8->beep();
+        }
+    }
+
+    // keyboard management
+    chip8->keyboard_input(chip8->key);
 }
 
 
