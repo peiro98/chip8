@@ -239,10 +239,11 @@ void load_sprite_location(CHIP8 *chip8, uint16_t opcode) {
 
 void load_bcd_representation(CHIP8 *chip8, uint16_t opcode) {
     uint8_t vx = (opcode & 0x0F00) >> 8;
+    uint8_t value = chip8->register_file.raw[vx];
 
-    chip8->memory[chip8->I + 0] = chip8->register_file.raw[vx] % 10;
-    chip8->memory[chip8->I + 1] = chip8->register_file.raw[vx] % 100 / 10;
-    chip8->memory[chip8->I + 2] = chip8->register_file.raw[vx] / 100;
+    chip8->memory[chip8->I + 0] = value / 100;
+    chip8->memory[chip8->I + 1] = (value % 100) / 10;
+    chip8->memory[chip8->I + 2] = value % 10;
 }
 
 void store_registers(CHIP8 *chip8, uint16_t opcode) {
