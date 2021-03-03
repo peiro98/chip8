@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define MEMORY_FONTSET_START 0x050
+#define MEMORY_FONTSET_START 0x000
 #define MEMORY_PGM_START 0x200
 #define FONTSET_SIZE 80
 #define VIDEO_SIZE 64 * 32

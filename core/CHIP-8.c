@@ -6,7 +6,7 @@
 #include "instructions.h"
 
 
-#define CLK_PERIOD (1e6 / 60)
+#define CLK_PERIOD (2 * 1000)
 
 uint8_t fontset[FONTSET_SIZE] =
         {
@@ -165,7 +165,7 @@ _Noreturn void CHIP8_loop(CHIP8 *chip8) {
 
         if (chip8->sound_timer) {
             chip8->sound_timer--;
-            if (!chip8->sound_timer) {
+            if (chip8->sound_timer == 1) {
                 chip8->beep();
             }
         }
