@@ -6,8 +6,8 @@ A dead simple and low effort CHIP 8 emulator.
 
 ## Usage
 ```bash
-gcc main.c core/*.c core/*.h -lncurses -o CHIP8
-./CHIP8 pong.c8
+make terminal
+./CHIP8.out pong.c8
 ```
 
 ## References
