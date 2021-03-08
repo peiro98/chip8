@@ -22,7 +22,8 @@ int main(int argc, char **argv) {
     window_setup();
 
     // CHIP8_init the CHIP-8 emulator with the user-specified rom
-    CHIP8_init(&chip8, argv[1]);
+    CHIP8_init(&chip8);
+    CHIP8_load_rom_from_file(&chip8, argv[1]);
     CHIP8_set_refresh_function(&chip8, &refresh_screen);
     CHIP8_set_beep_function(&chip8, &emit_beep);
     CHIP8_set_keyboard_input_function(&chip8, &keyboard_input);

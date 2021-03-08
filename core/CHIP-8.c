@@ -34,8 +34,6 @@ static void define_instruction(CHIP8 *chip8, int index,
 
 void load_ISA(CHIP8 *chip8);
 
-void load_rom(CHIP8 *chip8, char *path);
-
 
 /**
  * Initialize the CHIP8 emulator and load the provided rom in main memory.
@@ -43,7 +41,7 @@ void load_rom(CHIP8 *chip8, char *path);
  * @param chip8 is a pointer to the CHIP8 struct
  * @param rom is the path of the rom
  */
-void CHIP8_init(CHIP8 *chip8, char *rom) {
+void CHIP8_init(CHIP8 *chip8) {
     srand((unsigned) getpid());
 
     // reset current instruction
@@ -56,9 +54,6 @@ void CHIP8_init(CHIP8 *chip8, char *rom) {
 
     // load the instruction set
     load_ISA(chip8);
-
-    // load the rom in main memory
-    load_rom(chip8, rom);
 
     // clear the screen state
     memset(chip8->video, 0, 64 * 32);
@@ -113,7 +108,7 @@ void load_ISA(CHIP8 *chip8) {
     define_instruction(chip8, 34, 0xF0FF, 0xF065, &load_registers);
 }
 
-void load_rom(CHIP8 *chip8, char *path) {
+void CHIP8_load_rom_from_file(CHIP8 *chip8, char *path) {
     FILE *rom = fopen(path, "rb");
 
     if (!rom) {
@@ -127,6 +122,10 @@ void load_rom(CHIP8 *chip8, char *path) {
     }
 
     fclose(rom);
+}
+
+void CHIP8_load_rom_bytes(CHIP8 *chip8, uint8_t *rom, int length) {
+    memcpy(chip8->memory + MEMORY_PGM_START, rom, length);
 }
 
 void CHIP8_set_refresh_function(CHIP8 *chip8, void (*refresh)(const uint8_t *)) {
@@ -198,7 +197,7 @@ void CHIP8_tick(CHIP8 *chip8) {
  */
 void define_instruction(CHIP8 *chip8, int index,
                         uint16_t mask, uint16_t opcode,
-                        void (*execute)(CHIP8 *, uint16_t)) {
+                        instruction_runner execute) {
     chip8->ISA[index].mask = mask;
     chip8->ISA[index].opcode = opcode;
     chip8->ISA[index].execute = execute;

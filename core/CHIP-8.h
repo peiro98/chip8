@@ -145,9 +145,25 @@ struct CHIP8_s {
  * Initialize the CHIP8 emulator and load the provided rom in main memory.
  *
  * @param chip8 is a pointer to the CHIP8 struct
+ */
+extern void CHIP8_init(CHIP8 *chip8);
+
+/**
+ * Load a ROM in the CHIP8 memory from file.
+ *
+ * @param chip8 is a pointer to the CHIP8 struct
  * @param rom is the path of the rom
  */
-extern void CHIP8_init(CHIP8 *chip8, char *rom);
+extern void CHIP8_load_rom_from_file(CHIP8 *chip8, char *path);
+
+/**
+ * Load a ROM in the CHIP8 memory.
+ *
+ * @param chip8 is a pointer to the CHIP8 struct
+ * @param rom is the rom's content
+ * @param length is the the size of the rom
+ */
+extern void CHIP8_load_rom_bytes(CHIP8 *chip8, uint8_t *rom, int length);
 
 /**
  * Set the function called by the emulator in order to update the screen.
