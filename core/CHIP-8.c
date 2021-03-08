@@ -63,6 +63,10 @@ void CHIP8_init(CHIP8 *chip8) {
 
     // set the fontset
     memcpy(chip8->memory + MEMORY_FONTSET_START, fontset, FONTSET_SIZE);
+
+    chip8->refresh_screen = NULL;
+    chip8->beep = NULL;
+    chip8->keyboard_input = NULL;
 }
 
 /**
@@ -162,7 +166,7 @@ void CHIP8_tick(CHIP8 *chip8) {
         }
     }
 
-    if (chip8->draw_flag) {
+    if (chip8->draw_flag && chip8->refresh_screen != NULL) {
         chip8->refresh_screen(chip8->video);
     }
 
@@ -173,13 +177,15 @@ void CHIP8_tick(CHIP8 *chip8) {
 
     if (chip8->sound_timer) {
         chip8->sound_timer--;
-        if (chip8->sound_timer == 1) {
+        if (chip8->sound_timer == 1 && chip8->beep != NULL) {
             chip8->beep();
         }
     }
 
     // keyboard management
-    chip8->keyboard_input(chip8->key);
+    if (chip8->keyboard_input != NULL) {
+        chip8->keyboard_input(chip8->key);
+    }
 }
 
 
