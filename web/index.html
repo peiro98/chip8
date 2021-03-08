@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CHIP8 emulator with C + WebAssembly!</title>
+
+    <meta name="viewport" content="width=640">
+    <meta name="description" content="A dead simple CHIP8 emulator with C and WebAssembly!">
+
+    <link rel="icon" type="image/png" href="favicon.png">
+
+    <link rel="preload" as="font" href="fonts/press_start_2p.woff2" type="font/woff2" crossorigin/>
+
+    <style type="text/css">
+        html, body {
+            padding: 0;
+            margin: 0;
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        @font-face {
+            font-family: 'Press Start 2P';
+            font-style: normal;
+            font-weight: 400;
+            font-display: optional;
+            src: url('fonts/press_start_2p.woff2') format('woff2');
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+        }
+
+        * {
+            box-sizing: border-box;
+            background-color: #000;
+            color: white;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 32px;
+        }
+
+        header {
+            margin: 32px;
+            text-align: center;
+        }
+
+        #chip8-canvas {
+            width: 640px;
+            height: 320px;
+        }
+
+        #reg-file-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        #reg-file-container tr {
+            line-height: 130%;
+        }
+
+        #reg-file-row {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #reg-file-container td {
+            text-align: right;
+            min-width: 4em;
+            font-size: 1.2em;
+        }
+
+        #reg-file-container tr td:first-child {
+            font-weight: bolder;
+            text-align: center;
+        }
+
+
+        /*!
+         * "Fork me on GitHub" CSS ribbon v0.2.3 | MIT License
+         * https://github.com/simonwhitaker/github-fork-ribbon-css
+        */
+        .github-fork-ribbon {
+            width: 12.1em;
+            height: 12.1em;
+            position: absolute;
+            overflow: hidden;
+            top: 0;
+            right: 0;
+            z-index: 9999;
+            pointer-events: none;
+            font-size: 13px;
+            text-decoration: none;
+            text-indent: -999999px
+        }
+
+        .github-fork-ribbon.fixed {
+            position: fixed
+        }
+
+        .github-fork-ribbon:active, .github-fork-ribbon:hover {
+            background-color: rgba(0, 0, 0, 0)
+        }
+
+        .github-fork-ribbon:after, .github-fork-ribbon:before {
+            position: absolute;
+            display: block;
+            width: 15.38em;
+            height: 1.54em;
+            top: 3.23em;
+            right: -3.23em;
+            -webkit-box-sizing: content-box;
+            -moz-box-sizing: content-box;
+            box-sizing: content-box;
+            -webkit-transform: rotate(45deg);
+            -moz-transform: rotate(45deg);
+            -ms-transform: rotate(45deg);
+            -o-transform: rotate(45deg);
+            transform: rotate(45deg)
+        }
+
+        .github-fork-ribbon:before {
+            content: "";
+            padding: .38em 0;
+            background-color: #a00;
+            background-image: -webkit-gradient(linear, left top, left bottom, from(rgba(0, 0, 0, 0)), to(rgba(0, 0, 0, .15)));
+            background-image: -webkit-linear-gradient(top, rgba(0, 0, 0, 0), rgba(0, 0, 0, .15));
+            background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0), rgba(0, 0, 0, .15));
+            background-image: -ms-linear-gradient(top, rgba(0, 0, 0, 0), rgba(0, 0, 0, .15));
+            background-image: -o-linear-gradient(top, rgba(0, 0, 0, 0), rgba(0, 0, 0, .15));
+            background-image: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, .15));
+            -webkit-box-shadow: 0 .15em .23em 0 rgba(0, 0, 0, .5);
+            -moz-box-shadow: 0 .15em .23em 0 rgba(0, 0, 0, .5);
+            box-shadow: 0 .15em .23em 0 rgba(0, 0, 0, .5);
+            pointer-events: auto
+        }
+
+        .github-fork-ribbon:after {
+            content: attr(data-ribbon);
+            color: #fff;
+            font: 700 1em "Helvetica Neue", Helvetica, Arial, sans-serif;
+            line-height: 1.54em;
+            text-decoration: none;
+            text-shadow: 0 -.08em rgba(0, 0, 0, .5);
+            text-align: center;
+            text-indent: 0;
+            padding: .15em 0;
+            margin: .15em 0;
+            border-width: .08em 0;
+            border-style: dotted;
+            border-color: #fff;
+            border-color: rgba(255, 255, 255, .7)
+        }
+
+        .github-fork-ribbon.left-bottom, .github-fork-ribbon.left-top {
+            right: auto;
+            left: 0
+        }
+
+        .github-fork-ribbon.left-bottom, .github-fork-ribbon.right-bottom {
+            top: auto;
+            bottom: 0
+        }
+
+        .github-fork-ribbon.left-bottom:after, .github-fork-ribbon.left-bottom:before, .github-fork-ribbon.left-top:after, .github-fork-ribbon.left-top:before {
+            right: auto;
+            left: -3.23em
+        }
+
+        .github-fork-ribbon.left-bottom:after, .github-fork-ribbon.left-bottom:before, .github-fork-ribbon.right-bottom:after, .github-fork-ribbon.right-bottom:before {
+            top: auto;
+            bottom: 3.23em
+        }
+
+        .github-fork-ribbon.left-top:after, .github-fork-ribbon.left-top:before, .github-fork-ribbon.right-bottom:after, .github-fork-ribbon.right-bottom:before {
+            -webkit-transform: rotate(-45deg);
+            -moz-transform: rotate(-45deg);
+            -ms-transform: rotate(-45deg);
+            -o-transform: rotate(-45deg);
+            transform: rotate(-45deg)
+        }
+    </style>
+
+    <script src="./chip8.js" type="application/javascript"></script>
+    <script src="./app.js" type="application/javascript"></script>
+</head>
+<body>
+
+<header>
+    <h1 id="title">CHIP8 emulator with C + WebAssembly!</h1>
+</header>
+
+<article class="container">
+
+    <canvas id="chip8-canvas" width="640px" height="320px" style=""></canvas>
+
+    <div id="reg-file-container">
+        <table>
+            <tr>
+                <td>PC</td>
+                <td id="chip8-PC"></td>
+            </tr>
+        </table>
+        <div id="reg-file-row">
+            <table>
+                <tr>
+                    <td>V0</td>
+                    <td id="reg-v0"></td>
+                </tr>
+                <tr>
+                    <td>V1</td>
+                    <td id="reg-v1"></td>
+                </tr>
+                <tr>
+                    <td>V2</td>
+                    <td id="reg-v2"></td>
+                </tr>
+                <tr>
+                    <td>V3</td>
+                    <td id="reg-v3"></td>
+                </tr>
+                <tr>
+                    <td>V4</td>
+                    <td id="reg-v4"></td>
+                </tr>
+                <tr>
+                    <td>V5</td>
+                    <td id="reg-v5"></td>
+                </tr>
+                <tr>
+                    <td>V6</td>
+                    <td id="reg-v6"></td>
+                </tr>
+                <tr>
+                    <td>V7</td>
+                    <td id="reg-v7"></td>
+                </tr>
+            </table>
+            <div style="width: 16px"></div>
+            <table>
+                <tr>
+                    <td>V8</td>
+                    <td id="reg-v8"></td>
+                </tr>
+                <tr>
+                    <td>V9</td>
+                    <td id="reg-v9"></td>
+                </tr>
+                <tr>
+                    <td>VA</td>
+                    <td id="reg-vA"></td>
+                </tr>
+                <tr>
+                    <td>VB</td>
+                    <td id="reg-vB"></td>
+                </tr>
+                <tr>
+                    <td>VC</td>
+                    <td id="reg-vC"></td>
+                </tr>
+                <tr>
+                    <td>VD</td>
+                    <td id="reg-vD"></td>
+                </tr>
+                <tr>
+                    <td>VE</td>
+                    <td id="reg-vE"></td>
+                </tr>
+                <tr>
+                    <td>VF</td>
+                    <td id="reg-vF"></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</article>
+
+<a class="github-fork-ribbon" href="http://github.com/peiro98/chip8"
+   style="position: absolute; top: 0; right: 0; background: transparent"
+   data-ribbon="Fork me on GitHub" title="Fork me on GitHub">Fork me on GitHub</a>
+
+</body>
+</html>

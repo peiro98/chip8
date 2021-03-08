@@ -1,0 +1,11 @@
+{
+  "hosting": {
+    "site": "chip8-simonepeirone-it",
+    "public": "web/",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}

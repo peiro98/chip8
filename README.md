@@ -2,7 +2,7 @@
 
 A dead simple and low effort CHIP 8 emulator.
 
-![Pong running on the CHIP8 emulator](pong.png)
+![Pong running on the CHIP8 emulator](web_screenshot.png)
 
 ## Usage
 ```bash
